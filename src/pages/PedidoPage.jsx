@@ -12,7 +12,8 @@ export default function PedidoPage() {
   const [productos, setProductos]   = useState([])
   const [loading, setLoading]       = useState(true)
 
-  const [cliente, setCliente]       = useState('')
+  const DEFAULT_CLIENTE = 'Cliente pos - 2222'
+  const [cliente, setCliente]       = useState(DEFAULT_CLIENTE)
   const [vendedorId, setVendedorId] = useState('')
   const [tipo, setTipo]             = useState('mesa')
   const [mesaId, setMesaId]         = useState('')
@@ -34,7 +35,11 @@ export default function PedidoPage() {
     ]).then(([cfg, cats, mes, vends, prods]) => {
       setConfig(cfg.data || {})
       setCategorias(cats.data || [])
-      setMesas((mes.data || []).filter(m => m.activa))
+      const activas = (mes.data || []).filter(m => m.activa)
+      setMesas(activas)
+      if (activas.length > 0) {
+        setMesaId(activas[0].id)
+      }
       setVendedores((vends.data || []).filter(v => v.activo))
       setProductos(prods.data || [])
     }).catch(console.error)
@@ -90,8 +95,8 @@ export default function PedidoPage() {
       })
       toast(`Pedido #${res.data.numero_pedido} enviado — Total: ${fmt(res.data.total)}`, 'success', 4000)
       setCarrito([])
-      setCliente('')
-      setMesaId('')
+      setCliente(DEFAULT_CLIENTE)
+      setMesaId(mesas.length > 0 ? mesas[0].id : '')
       setVendedorId('')
       setTelefono('')
       setDireccion('')
@@ -136,7 +141,17 @@ export default function PedidoPage() {
           <div className="card-body">
             <div className="form-group">
               <label className="label">Nombre del cliente</label>
-              <input className="input" placeholder="Ej. Carlos Pérez" value={cliente} onChange={e => setCliente(e.target.value)} />
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input className="input" placeholder="Ej. Carlos Pérez" value={cliente} onChange={e => setCliente(e.target.value)} />
+                <button 
+                  className="btn btn-ghost btn-icon" 
+                  title="Limpiar"
+                  onClick={() => setCliente('')}
+                  style={{ background: 'var(--bg3)', border: '1px solid var(--border)', flexShrink: 0 }}
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             <div className="form-group">
