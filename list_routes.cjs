@@ -1,11 +1,11 @@
 const { Client } = require('ssh2');
 const conn = new Client();
 conn.on('ready', () => {
-  conn.exec(`curl -s http://localhost:3007/api/metodos_pago`, (err, stream) => {
+  conn.exec('ls -la /var/www/minipos-api/src/routes/', (err, stream) => {
     if (err) throw err;
     let out = '';
     stream.on('close', () => {
-      console.log('API 3007 Response:\n', out);
+      console.log('Routes:\n', out);
       conn.end();
     }).on('data', d => out += d).stderr.on('data', d => out += d);
   });

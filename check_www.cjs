@@ -1,11 +1,11 @@
 const { Client } = require('ssh2');
 const conn = new Client();
 conn.on('ready', () => {
-  conn.exec(`curl -s http://localhost:3007/api/metodos_pago`, (err, stream) => {
+  conn.exec(`ls -la /var/www`, (err, stream) => {
     if (err) throw err;
     let out = '';
     stream.on('close', () => {
-      console.log('API 3007 Response:\n', out);
+      console.log('WWW Dirs:', out);
       conn.end();
     }).on('data', d => out += d).stderr.on('data', d => out += d);
   });

@@ -268,96 +268,53 @@ export default function PedidosAdmin() {
     doc.save(`Factura_Orden_${p.numero_pedido || p.id}.pdf`)
   }
   function imprimirFactura(p) {
-    const items = typeof p.items === 'string' ? JSON.parse(p.items || '[]') : (p.items || [])
-    let html = `
-      <html>
-        <head>
-          <style>
-            @media print { 
-              @page { margin: 0; } 
-              body { margin: 10px; } 
-            }
-            body { font-family: 'Courier New', Courier, monospace; width: 300px; margin: 0 auto; padding: 20px 10px; color: #000; }
-            h1 { text-align: center; font-size: 20px; margin: 0 0 5px 0; font-family: sans-serif; text-transform: uppercase; font-weight: 900; }
-            .subtitle { text-align: center; font-size: 13px; margin-bottom: 20px; font-family: sans-serif; font-weight: bold; letter-spacing: 1px; }
-            .info { font-size: 12px; margin-bottom: 15px; border-bottom: 1px dashed #000; padding-bottom: 10px; }
-            .info div { margin-bottom: 4px; }
-            table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 15px; }
-            th { text-align: left; border-bottom: 1px dashed #000; padding-bottom: 6px; text-transform: uppercase; }
-            td { padding: 6px 0; vertical-align: top; }
-            .qty { width: 35px; }
-            .price { text-align: right; width: 80px; }
-            .totals { font-size: 13px; font-weight: bold; border-top: 1px dashed #000; padding-top: 10px; margin-bottom: 20px; }
-            .totals div { display: flex; justify-content: space-between; margin-bottom: 5px; }
-            .totals .grand-total { font-size: 18px; margin-top: 10px; padding-top: 10px; border-top: 2px solid #000; font-family: sans-serif; font-weight: 900; }
-            .footer { text-align: center; font-size: 12px; margin-top: 30px; font-family: sans-serif; font-weight: 600; }
-          </style>
-        </head>
-        <body>
-          <h1>Factura de Venta</h1>
-          <div class="subtitle">Orden #${p.numero_pedido}</div>
-          <div class="info">
-            <div><b>Fecha:</b> ${new Date(p.created_at).toLocaleString('es-CO')}</div>
-            <div><b>Cliente:</b> ${p.nombre_cliente || 'Mostrador'}</div>
-            ${p.mesa_nombre ? `<div><b>Mesa:</b> ${p.mesa_nombre}</div>` : ''}
-            <div><b>Tipo:</b> ${p.tipo_pedido.toUpperCase()}</div>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th class="qty">Cant</th>
-                <th>Producto</th>
-                <th class="price">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${items.map(it => `
-                <tr>
-                  <td class="qty">${it.cantidad}</td>
-                  <td>${it.nombre_producto}</td>
-                  <td class="price">${fmt(it.cantidad * (parseFloat(it.precio) || 0))}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-          <div class="totals">
-            <div class="grand-total"><span>TOTAL</span><span>${fmt(p.total)}</span></div>
-          </div>
-          <div class="footer">
-            ¡Gracias por su compra!<br>
-            Vuelva pronto
-          </div>
-        </body>
-      </html>
-    `
-    const w = window.open('', '_blank', 'width=400,height=600')
-    w.document.write(html)
-    w.document.close()
-    setTimeout(() => { w.print(); w.close(); }, 500)
+    descargarFacturaPDF(p, [], p.total, 0)
   }
 
   function generarComandas() {
     const sel = pedidos.filter(p => selectedIds.includes(p.id))
     if (!sel.length) return toast('Por favor selecciona al menos un pedido para imprimir la comanda', 'error')
-    const txt = sel.map(p => {
+    
+    sel.forEach(p => {
       const items = typeof p.items === 'string' ? JSON.parse(p.items || '[]') : (p.items || [])
-      return [
-        '================================',
-        '       COMANDA DE COCINA',
-        '================================',
-        `Pedido : #${p.numero_pedido}`,
-        `Cliente: ${p.nombre_cliente || '—'}`,
-        `Tipo   : ${TIPO_LABEL[p.tipo_pedido]}${p.mesa_nombre ? ' · ' + p.mesa_nombre : ''}`,
-        `Hora   : ${new Date(p.created_at).toLocaleTimeString('es-CO')}`,
-        '--------------------------------',
-        ...items.map(it => `  ${String(it.cantidad).padStart(2)}x  ${it.nombre_producto}`),
-        p.observaciones ? `\nOBS: ${p.observaciones}` : '',
-        '================================\n'
-      ].filter(Boolean).join('\n')
-    }).join('\n')
-    const w = window.open('', '_blank', 'width=400,height=600')
-    w.document.write(`<pre style="font-family:monospace;font-size:13px;padding:20px">${txt}</pre>`)
-    w.print()
+      let height = 50 + (items.length * 6)
+      if (p.observaciones) height += 15
+      
+      const doc = new jsPDF({ unit: 'mm', format: [80, height] })
+      
+      doc.setFont("helvetica", "bold")
+      doc.setFontSize(14)
+      doc.text("COMANDA DE COCINA", 40, 10, { align: "center" })
+      
+      doc.setFont("helvetica", "normal")
+      doc.setFontSize(10)
+      doc.text(`Pedido: #${p.numero_pedido || p.id}`, 5, 20)
+      doc.text(`Cliente: ${p.nombre_cliente || '—'}`, 5, 25)
+      doc.text(`Tipo: ${TIPO_LABEL[p.tipo_pedido] || '—'}${p.mesa_nombre ? ' · ' + p.mesa_nombre : ''}`, 5, 30)
+      doc.text(`Hora: ${new Date(p.created_at).toLocaleTimeString('es-CO')}`, 5, 35)
+      
+      doc.line(5, 38, 75, 38)
+      
+      let y = 44
+      doc.setFont("helvetica", "bold")
+      items.forEach(it => {
+        doc.text(`${it.cantidad}x`, 5, y)
+        const name = (it.nombre_producto || '').substring(0, 25)
+        doc.text(name, 15, y)
+        y += 6
+      })
+      
+      if (p.observaciones) {
+        doc.line(5, y, 75, y)
+        y += 6
+        doc.setFont("helvetica", "italic")
+        doc.setFontSize(9)
+        const obsLines = doc.splitTextToSize(`OBS: ${p.observaciones}`, 70)
+        doc.text(obsLines, 5, y)
+      }
+      
+      doc.save(`Comanda_${p.numero_pedido || p.id}.pdf`)
+    })
   }
 
   const txtLow = fTexto.toLowerCase().trim()

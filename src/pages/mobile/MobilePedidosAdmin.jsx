@@ -79,64 +79,52 @@ export default function MobilePedidosAdmin() {
 
   // ==== IMPRESION & PDF ====
   function imprimirFactura(p) {
-    const items = typeof p.items === 'string' ? JSON.parse(p.items || '[]') : (p.items || [])
-    let html = `
-      <html><head>
-          <style>
-            @media print { @page { margin: 0; } body { margin: 10px; } }
-            body { font-family: monospace; width: 300px; margin: 0 auto; color: #000; }
-            h1 { text-align: center; font-size: 20px; text-transform: uppercase; }
-            .info { font-size: 12px; margin-bottom: 15px; border-bottom: 1px dashed #000; padding-bottom: 10px; }
-            table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 15px; }
-            th { text-align: left; border-bottom: 1px dashed #000; padding-bottom: 6px; }
-            .totals { font-size: 15px; font-weight: bold; border-top: 1px dashed #000; padding-top: 10px; text-align: right;}
-            .footer { text-align: center; font-size: 12px; margin-top: 30px; }
-          </style>
-        </head><body>
-          <h1>Factura</h1>
-          <div style="text-align:center">Orden #${p.numero_pedido}</div>
-          <div class="info">
-            <div>Fecha: ${new Date(p.created_at).toLocaleString('es-CO')}</div>
-            <div>Cliente: ${p.nombre_cliente || 'Mostrador'}</div>
-            ${p.mesa_nombre ? `<div>Mesa: ${p.mesa_nombre}</div>` : ''}
-          </div>
-          <table>
-            <tr><th>Cant</th><th>Prod</th><th style="text-align:right">Total</th></tr>
-            ${items.map(it => `<tr><td>${it.cantidad}</td><td>${it.nombre_producto}</td><td style="text-align:right">${fmt(it.cantidad * (parseFloat(it.precio) || 0))}</td></tr>`).join('')}
-          </table>
-          <div class="totals">TOTAL: ${fmt(p.total)}</div>
-          <div class="footer">¡Gracias por su compra!</div>
-        </body></html>`
-    const w = window.open('', '_blank', 'width=400,height=600')
-    if (w) {
-      w.document.write(html)
-      w.document.close()
-      setTimeout(() => { w.print(); w.close(); }, 500)
-    } else toast('Pop-ups bloqueados', 'error')
+    descargarFacturaPDF(p, [], p.total, 0)
     setActiveSheet(null)
   }
 
   function imprimirComanda(p) {
-    const items = typeof p.items === 'string' ? JSON.parse(p.items || '[]') : (p.items || [])
-    const txt = [
-      '================================',
-      '       COMANDA DE COCINA',
-      '================================',
-      `Pedido : #${p.numero_pedido}`,
-      `Tipo   : ${TIPO_LABEL[p.tipo_pedido]}${p.mesa_nombre ? ' - ' + p.mesa_nombre : ''}`,
-      `Hora   : ${new Date(p.created_at).toLocaleTimeString('es-CO')}`,
-      '--------------------------------',
-      ...items.map(it => `  ${String(it.cantidad).padStart(2)}x  ${it.nombre_producto}`),
-      p.observaciones ? `\nOBS: ${p.observaciones}` : '',
-      '================================\n'
-    ].filter(Boolean).join('\n')
-    
-    const w = window.open('', '_blank', 'width=400,height=600')
-    if (w) {
-      w.document.write(`<pre style="font-family:monospace;font-size:14px;padding:10px">${txt}</pre>`)
-      w.document.close()
-      setTimeout(() => { w.print(); w.close(); }, 500)
-    } else toast('Pop-ups bloqueados', 'error')
+    try {
+      const items = typeof p.items === 'string' ? JSON.parse(p.items || '[]') : (p.items || [])
+      let height = 50 + (items.length * 6)
+      if (p.observaciones) height += 15
+      
+      const doc = new jsPDF({ unit: 'mm', format: [80, height] })
+      
+      doc.setFont("helvetica", "bold")
+      doc.setFontSize(14)
+      doc.text("COMANDA DE COCINA", 40, 10, { align: "center" })
+      
+      doc.setFont("helvetica", "normal")
+      doc.setFontSize(10)
+      doc.text(`Pedido: #${p.numero_pedido || p.id}`, 5, 20)
+      doc.text(`Tipo: ${TIPO_LABEL[p.tipo_pedido] || '—'}${p.mesa_nombre ? ' - ' + p.mesa_nombre : ''}`, 5, 25)
+      doc.text(`Hora: ${new Date(p.created_at).toLocaleTimeString('es-CO')}`, 5, 30)
+      
+      doc.line(5, 33, 75, 33)
+      
+      let y = 39
+      doc.setFont("helvetica", "bold")
+      items.forEach(it => {
+        doc.text(`${it.cantidad}x`, 5, y)
+        const name = (it.nombre_producto || '').substring(0, 25)
+        doc.text(name, 15, y)
+        y += 6
+      })
+      
+      if (p.observaciones) {
+        doc.line(5, y, 75, y)
+        y += 6
+        doc.setFont("helvetica", "italic")
+        doc.setFontSize(9)
+        const obsLines = doc.splitTextToSize(`OBS: ${p.observaciones}`, 70)
+        doc.text(obsLines, 5, y)
+      }
+      
+      doc.save(`Comanda_${p.numero_pedido || p.id}.pdf`)
+    } catch (err) {
+      toast('Error al generar PDF', 'error')
+    }
     setActiveSheet(null)
   }
 

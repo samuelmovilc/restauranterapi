@@ -1,12 +1,12 @@
 const { Client } = require('ssh2');
 const conn = new Client();
 conn.on('ready', () => {
-  conn.exec(`mysql -u root -e "SHOW DATABASES;"`, (err, stream) => {
+  conn.sftp((err, sftp) => {
     if (err) throw err;
-    let out = '';
-    stream.on('close', () => {
-      console.log('DATABASES:\n', out);
+    sftp.readFile('/var/www/minipos-api/src/routes/catalogo.js', 'utf8', (err, data) => {
+      if (err) console.error(err);
+      else console.log(data);
       conn.end();
-    }).on('data', d => out += d).stderr.on('data', d => out += d);
+    });
   });
 }).connect({ host: '89.117.56.39', port: 22, username: 'root', password: 'Henogo0521*' });
