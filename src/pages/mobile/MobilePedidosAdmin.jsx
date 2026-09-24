@@ -92,8 +92,8 @@ export default function MobilePedidosAdmin() {
       const doc = new jsPDF({ unit: 'mm', format: [80, height] })
       
       doc.setFont("helvetica", "bold")
-      doc.setFontSize(14)
-      doc.text("COMANDA DE COCINA", 10, 10)
+      doc.setFontSize(11)
+      doc.text("COMANDA DE COCINA", 8, 10)
       
       doc.setFont("helvetica", "bold")
       doc.setFontSize(10)
@@ -135,8 +135,8 @@ export default function MobilePedidosAdmin() {
       const doc = new jsPDF({ unit: 'mm', format: [80, height] })
       
       doc.setFont("helvetica", "bold")
-      doc.setFontSize(14)
-      doc.text("FACTURA DE VENTA", 15, 10)
+      doc.setFontSize(12)
+      doc.text("FACTURA DE VENTA", 10, 10)
       
       doc.setFont("helvetica", "bold")
       doc.setFontSize(9)

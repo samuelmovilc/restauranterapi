@@ -214,8 +214,8 @@ export default function PedidosAdmin() {
     const doc = new jsPDF({ unit: 'mm', format: [80, height] })
     
     doc.setFont("helvetica", "bold")
-    doc.setFontSize(14)
-    doc.text("MINIPOS RESTAURANTE", 10, 10)
+    doc.setFontSize(12)
+    doc.text("MINIPOS RESTAURANTE", 5, 10)
     
     doc.setFontSize(10)
     doc.text("FACTURA DE VENTA", 15, 16)
@@ -283,8 +283,8 @@ export default function PedidosAdmin() {
       const doc = new jsPDF({ unit: 'mm', format: [80, height] })
       
       doc.setFont("helvetica", "bold")
-      doc.setFontSize(14)
-      doc.text("COMANDA DE COCINA", 10, 10)
+      doc.setFontSize(11)
+      doc.text("COMANDA DE COCINA", 8, 10)
       
       doc.setFont("helvetica", "bold")
       doc.setFontSize(10)
