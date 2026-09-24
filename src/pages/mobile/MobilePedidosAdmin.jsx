@@ -93,9 +93,9 @@ export default function MobilePedidosAdmin() {
       
       doc.setFont("helvetica", "bold")
       doc.setFontSize(14)
-      doc.text("COMANDA DE COCINA", 40, 10, { align: "center" })
+      doc.text("COMANDA DE COCINA", 10, 10)
       
-      doc.setFont("helvetica", "normal")
+      doc.setFont("helvetica", "bold")
       doc.setFontSize(10)
       doc.text(`Pedido: #${p.numero_pedido || p.id}`, 5, 20)
       doc.text(`Tipo: ${TIPO_LABEL[p.tipo_pedido] || '—'}${p.mesa_nombre ? ' - ' + p.mesa_nombre : ''}`, 5, 25)
@@ -136,9 +136,9 @@ export default function MobilePedidosAdmin() {
       
       doc.setFont("helvetica", "bold")
       doc.setFontSize(14)
-      doc.text("FACTURA DE VENTA", 40, 10, { align: "center" })
+      doc.text("FACTURA DE VENTA", 15, 10)
       
-      doc.setFont("helvetica", "normal")
+      doc.setFont("helvetica", "bold")
       doc.setFontSize(9)
       doc.text(`Orden: #${p.numero_pedido || 'S/N'}`, 5, 20)
       doc.text(`Fecha: ${new Date(p.created_at || Date.now()).toLocaleString('es-CO')}`, 5, 24)
@@ -152,7 +152,7 @@ export default function MobilePedidosAdmin() {
       doc.line(5, 38, 75, 38)
       
       let y = 43
-      doc.setFont("helvetica", "normal")
+      doc.setFont("helvetica", "bold")
       items.forEach(it => {
         doc.text(`${it.cantidad}`, 5, y)
         doc.text((it.nombre_producto||'').substring(0, 17), 15, y)
@@ -169,7 +169,7 @@ export default function MobilePedidosAdmin() {
       y += 6
       
       if (mps && mps.length) {
-        doc.setFont("helvetica", "normal")
+        doc.setFont("helvetica", "bold")
         mps.forEach(m => {
           doc.text(`PAGO (${m.nombre}): $${parseFloat(m.monto||0).toLocaleString('es-CO')}`, 5, y)
           y += 5
@@ -180,8 +180,8 @@ export default function MobilePedidosAdmin() {
         }
       }
       
-      doc.setFont("helvetica", "normal")
-      doc.text("¡Gracias por su compra!", 40, y + 5, { align: "center" })
+      doc.setFont("helvetica", "bold")
+      doc.text("¡Gracias por su compra!", 20, y + 5)
       doc.save(`Factura_Orden_${p.numero_pedido}.pdf`)
     } catch (e) { toast('Error generando PDF', 'error') }
   }

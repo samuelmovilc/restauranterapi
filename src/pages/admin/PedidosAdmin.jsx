@@ -215,12 +215,12 @@ export default function PedidosAdmin() {
     
     doc.setFont("helvetica", "bold")
     doc.setFontSize(14)
-    doc.text("MINIPOS RESTAURANTE", 40, 10, { align: "center" })
+    doc.text("MINIPOS RESTAURANTE", 10, 10)
     
     doc.setFontSize(10)
-    doc.text("FACTURA DE VENTA", 40, 16, { align: "center" })
+    doc.text("FACTURA DE VENTA", 15, 16)
     
-    doc.setFont("helvetica", "normal")
+    doc.setFont("helvetica", "bold")
     doc.setFontSize(9)
     doc.text(`Orden: #${p.numero_pedido || p.num || 'S/N'}`, 5, 24)
     doc.text(`Fecha: ${new Date(p.created_at || Date.now()).toLocaleString('es-CO')}`, 5, 28)
@@ -234,7 +234,7 @@ export default function PedidosAdmin() {
     doc.line(5, 42, 75, 42)
     
     let y = 47
-    doc.setFont("helvetica", "normal")
+    doc.setFont("helvetica", "bold")
     items.forEach(it => {
       doc.text(`${it.cantidad}`, 5, y)
       doc.text((it.nombre_producto||'').substring(0, 17), 15, y)
@@ -251,7 +251,7 @@ export default function PedidosAdmin() {
     y += 6
     
     if (mps && mps.length) {
-      doc.setFont("helvetica", "normal")
+      doc.setFont("helvetica", "bold")
       mps.forEach(m => {
         doc.text(`PAGO (${m.nombre}): $${parseFloat(m.monto||0).toLocaleString('es-CO')}`, 5, y)
         y += 5
@@ -262,8 +262,8 @@ export default function PedidosAdmin() {
       }
     }
     
-    doc.setFont("helvetica", "normal")
-    doc.text("¡Gracias por su compra!", 40, y + 5, { align: "center" })
+    doc.setFont("helvetica", "bold")
+    doc.text("¡Gracias por su compra!", 20, y + 5)
     
     doc.save(`Factura_Orden_${p.numero_pedido || p.id}.pdf`)
   }
@@ -284,9 +284,9 @@ export default function PedidosAdmin() {
       
       doc.setFont("helvetica", "bold")
       doc.setFontSize(14)
-      doc.text("COMANDA DE COCINA", 40, 10, { align: "center" })
+      doc.text("COMANDA DE COCINA", 10, 10)
       
-      doc.setFont("helvetica", "normal")
+      doc.setFont("helvetica", "bold")
       doc.setFontSize(10)
       doc.text(`Pedido: #${p.numero_pedido || p.id}`, 5, 20)
       doc.text(`Cliente: ${p.nombre_cliente || '—'}`, 5, 25)
